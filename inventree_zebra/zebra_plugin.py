@@ -83,6 +83,11 @@ class ZebraLabelPlugin(LabelPrintingMixin, SettingsMixin, InvenTreePlugin):
             'description': _('Additional ZPL commands sent to the printer. Use carefully!'),
             'default': '~TA000~JSN^LT0^MNW^MTT^PMN^PON^PR2,2^LRN',
         },
+        'PRINTER_TIMEOUT': {
+            'name': _('Printer timeout'),
+            'description': _('timout setting'),
+            'default': '5',
+        },
     }
 
     def print_label(self, **kwargs):
@@ -94,6 +99,7 @@ class ZebraLabelPlugin(LabelPrintingMixin, SettingsMixin, InvenTreePlugin):
         threshold = self.get_setting('THRESHOLD')
         dpmm = int(self.get_setting('DPMM'))
         printer_init = self.get_setting('PRINTER_INIT')
+        printer_timeout = self.get_setting('PRINTER_TIMEOUT')
 
         # Extract width (x) and height (y) information.
         width = kwargs['width']
@@ -164,7 +170,8 @@ class ZebraLabelPlugin(LabelPrintingMixin, SettingsMixin, InvenTreePlugin):
         elif (connection == 'network'):
             try:
                 mysocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                mysocket.settimeout(5)
+                if(printer_timeout != '0'):
+                    mysocket.settimeout(int(printer_timeout))
                 mysocket.connect((ip_address, port))
                 data = li.dumpZPL()
                 mysocket.send(data.encode())
